@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 // circuit-breaker.service.ts
 import { Injectable, Scope } from '@nestjs/common';
 import * as CircuitBreaker from 'opossum';
@@ -11,15 +12,13 @@ export class CircuitBreakerService {
     this.defaultOptions = options;
   }
 
-  createBreaker(key: string, options: CircuitBreaker.Options): CircuitBreaker {
+  createBreaker(
+    key: string,
+    action: (...args: unknown[]) => Promise<unknown>,
+    options?: CircuitBreaker.Options,
+  ): CircuitBreaker {
     if (!this.breakers.has(key)) {
-      const breaker = new CircuitBreaker(
-        async () => {
-          // This logic injectable in run time
-        },
-        { ...this.defaultOptions, ...options },
-      );
-
+      const breaker = new CircuitBreaker(action, options);
       this.breakers.set(key, breaker);
     }
 

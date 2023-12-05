@@ -2,27 +2,27 @@
 import { Inject } from '@nestjs/common';
 
 import CircuitBreaker from 'opossum';
-import { CircuitBreakerService } from '../services/circuit-breaker.service';
+import { ServiceInjector } from '../services/inject.service';
 
 export function CircuitBreakerDecorator(
   options?: CircuitBreaker.Options,
 ): MethodDecorator {
-  const injectCircuitBreakerService = Inject(CircuitBreakerService);
   return function (
     target: any,
     propertyName: string | symbol,
     descriptor: PropertyDescriptor,
   ) {
-    injectCircuitBreakerService(target, 'CircuitBreakerService');
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
-      const breaker = this.circuitBreakerService.createBreaker(
+      const circuitBreakerService = ServiceInjector.getService();
+      const breaker = circuitBreakerService.createBreaker(
         propertyName.toString(),
+        async () => {
+          return originalMethod.apply(this, args);
+        },
         options,
       );
-
-      breaker.action = originalMethod.bind(this, ...args);
 
       return breaker.fire(() => originalMethod.apply(this, args));
     };
