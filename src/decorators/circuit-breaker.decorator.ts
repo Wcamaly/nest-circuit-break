@@ -5,7 +5,7 @@ import CircuitBreaker from 'opossum';
 import { CircuitBreakerService } from '../services/circuit-breaker.service';
 
 export function CircuitBreakerDecorator(
-  options: CircuitBreaker.Options,
+  options?: CircuitBreaker.Options,
 ): MethodDecorator {
   const injectCircuitBreakerService = Inject(CircuitBreakerService);
   return function (
